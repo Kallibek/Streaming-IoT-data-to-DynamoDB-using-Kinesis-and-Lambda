@@ -3,6 +3,7 @@ from delete_aws_resources import *
 from data_generator import generate_data
 import time
 
+# names of aws resources to be created
 LAMBDA_ROLE_NAME = 'lambda_role'
 STREAM_NAME = 'weather_stream'
 TABLE_NAME = 'weather_table'
