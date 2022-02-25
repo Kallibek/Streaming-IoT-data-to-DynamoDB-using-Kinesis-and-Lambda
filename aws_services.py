@@ -2,11 +2,12 @@ import boto3
 import json
 
 LAMBDA_ROLE_NAME = 'lambda_role_to_read_data_stream'
-STREAM_NAME='Weather'
+STREAM_NAME = 'Weather'
 TABLE_NAME = 'weather'
 # create kinesis stream
 
-def create_kinesis_stream(name:str):
+
+def create_kinesis_stream(name: str):
     kinesis = boto3.client('kinesis')
     streams = kinesis.list_streams()
 
@@ -17,36 +18,34 @@ def create_kinesis_stream(name:str):
         pass
     else:
         response = kinesis.create_stream(
-        StreamName=name,
-        ShardCount=1,
-        StreamModeDetails={'StreamMode': 'PROVISIONED'}
+            StreamName=name,
+            ShardCount=1,
+            StreamModeDetails={'StreamMode': 'PROVISIONED'}
         )
         print(f"Stream named {name} successfully created")
 
     response = kinesis.describe_stream(StreamName=name)
     arn = response['StreamDescription']['StreamARN']
     return arn
-create_kinesis_stream(STREAM_NAME)
-# create a role for Lambda
-# https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam.html
-# arn:aws:iam::aws:policy/AmazonKinesisReadOnlyAccess
 
-# iam = boto3.resource('iam')
-# role = iam.Role('lambda_role_to_read_data_stream')
-# role.attach_policy(PolicyArn='arn:aws:iam::aws:policy/AmazonKinesisReadOnlyAccess')
+
+create_kinesis_stream(STREAM_NAME)
+
 assume_role_policy_document = json.dumps({
     "Version": "2012-10-17",
     "Statement": [
         {
-        "Effect": "Allow",
-        "Principal": {
-            "Service": "lambda.amazonaws.com"
-        },
-        "Action": "sts:AssumeRole"
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "lambda.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
         }
     ]
 })
-def create_lambda_role(role_name:str):
+
+
+def create_lambda_role(role_name: str):
     iam_client = boto3.client('iam')
     try:
         iam_client.create_role(
@@ -63,6 +62,7 @@ def create_lambda_role(role_name:str):
     except:
         print("Error in creating a lambda role")
 
+
 create_lambda_role(LAMBDA_ROLE_NAME)
 
 
@@ -70,12 +70,15 @@ create_lambda_role(LAMBDA_ROLE_NAME)
 def create_lambda_function():
     pass
 
+
 create_lambda_function()
 
 # lambda_client = boto3.client('lambda')
 # lambda_client.create_function(FunctionName="Consumer")
 # create dynamo db
-def create_dynamodb_table(table_name:str):
+
+
+def create_dynamodb_table(table_name: str):
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.create_table(
         TableName=table_name,
@@ -101,15 +104,19 @@ def create_dynamodb_table(table_name:str):
             }
         ],
         ProvisionedThroughput={
-            'ReadCapacityUnits': 10,
+            'ReadCapacityUnits': 2,
             'WriteCapacityUnits': 2
         }
     )
     return table
+
+
 create_dynamodb_table(TABLE_NAME)
 
 # delete kinesis stream
-def delete_kinesis_stream(name:str):
+
+
+def delete_kinesis_stream(name: str):
     kinesis = boto3.client('kinesis')
     stream = kinesis.list_streams()
     if name in stream['StreamNames']:
@@ -119,7 +126,9 @@ def delete_kinesis_stream(name:str):
         print(f"Stream named {name} doesn't exist")
 
 # delete lambda role
-def delete_lambda_role(role_name:str):
+
+
+def delete_lambda_role(role_name: str):
     iam_client = boto3.client('iam')
     try:
         iam_client.detach_role_policy(
@@ -132,17 +141,21 @@ def delete_lambda_role(role_name:str):
 
         iam_client.delete_role(
             RoleName=role_name)
-            
+
     except:
         print("Error in deleting a lambda role")
+
 
 delete_lambda_role(LAMBDA_ROLE_NAME)
 # delete Lambda function
 
 # delete dynamo db
-def delete_dynamodb_table(table_name:str):
+
+
+def delete_dynamodb_table(table_name: str):
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(table_name)
     table.delete()
+
 
 delete_dynamodb_table(TABLE_NAME)
