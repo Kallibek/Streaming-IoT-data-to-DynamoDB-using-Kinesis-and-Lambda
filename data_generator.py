@@ -5,6 +5,14 @@ import random
 import time
 
 def generate_data(stream_name):
+    """
+    Function generates imitated IoT data to the speficied Kinesis Data Stream.
+
+    Parameters
+    --------------
+    stream_name : string
+        Name of the data stream to put data in
+    """
     kinesis = boto3.client('kinesis')
     while True:
 
